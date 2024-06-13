@@ -1,7 +1,14 @@
+'use client'
+import Button from "@/components/button";
 import { Header } from "@/components/header";
 import { Icon } from "@/components/icon";
 import { formartTime } from "@/other/helpers";
 import Image from "next/image";
+
+interface AgendaSelected {
+	id: string;
+	date: string;
+}
 
 export default function Doctor({
 	params,
@@ -121,6 +128,7 @@ export default function Doctor({
 						<Agenda agenda={doctor.agenda} />
 					</div>
 				</div>
+				<Modal isVisible={true} onClose={() => console.log("test")} agendaSelected={{ date: '', id: "" }} />
 			</div>
 		</>
 	)
@@ -146,5 +154,30 @@ function AgendaButton({ date, availability }: AgendaProps) {
 		<button className={`text-sm text-green-700 w-full h-12 rounded-lg py-2 px-3 ${availability ? "bg-green-100 hover:bg-green-200" : "bg-gray-200"}`}>
 			{formartTime(new Date(date))}
 		</button>
+	)
+}
+
+function Modal({ isVisible, onClose, agendaSelected }: {
+	isVisible: boolean;
+	onClose: () => void;
+	agendaSelected: AgendaSelected;
+}) {
+
+	if (!isVisible) return null;
+
+	const handleOutsideClick = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+		if (event.target === event.currentTarget) {
+			onClose();
+		}
+	}
+
+	return (
+		<div onClick={handleOutsideClick} className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-end">
+			<div className="bg-white flex flex-col p-8 text-center rounded-t-3xl w-full max-w-96 mx-auto max-h-[286px] h-full">
+				<h2 className="font-semibold text-2xl mb-8">Confirmar o agendamento</h2>
+				<p className="mb-12 text-sm">Agendamento para o dia 03/06/2024 às 15:00</p>
+				<Button>Sim, quero confimar</Button>
+			</div>
+		</div>
 	)
 }
