@@ -4,6 +4,7 @@ import { Header } from "@/components/header";
 import { Icon } from "@/components/icon";
 import { formartTime } from "@/other/helpers";
 import Image from "next/image";
+import { useState } from "react";
 
 interface AgendaSelected {
 	id: string;
@@ -13,6 +14,19 @@ interface AgendaSelected {
 export default function Doctor({
 	params,
 }: Readonly<{ params: { id: string } }>) {
+	const [isModalVisible, setIsModalVisible] = useState<boolean>(false)
+	const [agendaSelected, setAgendaSelected] = useState<AgendaSelected | null>(null)
+
+	const closeModal = () => setIsModalVisible(false)
+
+	const handleSeletectAgenda = (id: string, date: string) => {
+		setAgendaSelected({
+			id,
+			date
+		})
+		setIsModalVisible(true)
+	}
+
 	const doctor = {
 		firstName: "Vinicius",
 		lastName: "Sousa",
@@ -120,15 +134,19 @@ export default function Doctor({
 				<div className="px-2 flex flex-col gap-5">
 					<div className="flex">
 						<div className="w-[90px] h-[36px] flex items-center font-semibold">Hoje</div>
-						<Agenda agenda={doctor.agenda} />
+						<Agenda agenda={doctor.agenda} onSelectAgenda={handleSeletectAgenda} />
 					</div>
 
 					<div className="flex">
 						<div className="w-[90px] h-[36px] flex items-center font-semibold">Amanhã</div>
-						<Agenda agenda={doctor.agenda} />
+						<Agenda agenda={doctor.agenda} onSelectAgenda={handleSeletectAgenda} />
 					</div>
 				</div>
-				<Modal isVisible={true} onClose={() => console.log("test")} agendaSelected={{ date: '', id: "" }} />
+				<Modal
+					isVisible={isModalVisible}
+					onClose={closeModal}
+					agendaSelected={agendaSelected}
+				/>
 			</div>
 		</>
 	)
@@ -138,20 +156,24 @@ type AgendaProps = {
 	id: string,
 	date: string,
 	availability: boolean
+	onClick?: (id: string, date: string) => void
 }
 
-function Agenda({ agenda }: { agenda: AgendaProps[] }) {
+function Agenda({ agenda, onSelectAgenda }: { agenda: AgendaProps[], onSelectAgenda: (id: string, date: string) => void }) {
 	return (
 		<div className="grid grid-cols-3 gap-4 w-full">
-			{agenda.map(item => <AgendaButton key={item.id} {...item} />)}
+			{agenda.map(item => <AgendaButton key={item.id} onClick={onSelectAgenda} {...item} />)}
 		</div>
 	)
 }
 
-function AgendaButton({ date, availability }: AgendaProps) {
+function AgendaButton({ date, availability, onClick }: AgendaProps) {
 	if (!availability) return null
 	return (
-		<button className={`text-sm text-green-700 w-full h-12 rounded-lg py-2 px-3 ${availability ? "bg-green-100 hover:bg-green-200" : "bg-gray-200"}`}>
+		<button 
+		onClick={() => onClick?.(date, date)}
+		className={`text-sm text-green-700 w-full h-12 rounded-lg py-2 px-3 ${availability ? "bg-green-100 hover:bg-green-200" : "bg-gray-200"}`}
+		>
 			{formartTime(new Date(date))}
 		</button>
 	)
@@ -160,7 +182,7 @@ function AgendaButton({ date, availability }: AgendaProps) {
 function Modal({ isVisible, onClose, agendaSelected }: {
 	isVisible: boolean;
 	onClose: () => void;
-	agendaSelected: AgendaSelected;
+	agendaSelected: AgendaSelected | null;
 }) {
 
 	if (!isVisible) return null;
@@ -173,10 +195,10 @@ function Modal({ isVisible, onClose, agendaSelected }: {
 
 	return (
 		<div onClick={handleOutsideClick} className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-end">
-			<div className="bg-white flex flex-col p-8 text-center rounded-t-3xl w-full max-w-96 mx-auto max-h-[286px] h-full">
+			<div className="bg-white flex flex-col p-8 text-center rounded-t-3xl w-full max-w-96 mx-auto max-h-[250px] h-full">
 				<h2 className="font-semibold text-2xl mb-8">Confirmar o agendamento</h2>
 				<p className="mb-12 text-sm">Agendamento para o dia 03/06/2024 às 15:00</p>
-				<Button>Sim, quero confimar</Button>
+				<Button>Confirmar</Button>
 			</div>
 		</div>
 	)
